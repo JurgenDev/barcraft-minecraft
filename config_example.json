@@ -1,0 +1,9 @@
+{
+    "DiscordToken":"",
+    "AWSMachineId":"",
+    "AWSRegion":"",
+    "MinecraftServerAddress":"",
+    "DiscordHomeChannel":"",
+    "MinutesToWarning":"",
+    "MinutesToShutdown":""
+}

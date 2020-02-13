@@ -21,12 +21,11 @@ type Config struct {
 	AWSRegion              string `json:"AWSRegion"`
 	MinecraftServerAddress string `json:"MinecraftServerAddress"`
 	DiscordHomeChannel     string `json:"DiscordHomeChannel"`
-	MinutesToWarning       string `json:"MinutesToWarning"`
-	MinutesToShutdown      string `json:"MinutesToShutdown"`
+	MinutesToWarning       int    `json:"MinutesToWarning"`
+	MinutesToShutdown      int    `json:"MinutesToShutdown"`
 }
 
 var config Config
-var discord discordgo.Session
 var counter int = 0
 
 func initConfig() {
@@ -54,6 +53,7 @@ func main() {
 	discord.AddHandler(handle_message)
 
 	openerr := discord.Open()
+	defer discord.Close()
 
 	if openerr != nil {
 		fmt.Println("Error opening discord connection", openerr)
@@ -65,7 +65,6 @@ func main() {
 		check_server_off(discord)
 	}
 
-	discord.Close()
 }
 
 func check_server_off(s *discordgo.Session) {
@@ -83,10 +82,10 @@ func check_server_off(s *discordgo.Session) {
 	if res.NumPlayers == 0 {
 		counter++
 		if counter == 2*config.MinutesToWarning {
-			s.ChannelMessageSend(config.DiscordHomeChannel, fmt.Sprintf("Server has been empty for %n minutes, stopping server in %n minutes.", config.MinutesToWarning, config.MinutesToShutdown-config.MinutesToWarning))
+			s.ChannelMessageSend(config.DiscordHomeChannel, fmt.Sprintf("Server has been empty for %d minutes, stopping server in %d minutes.", config.MinutesToWarning, config.MinutesToShutdown-config.MinutesToWarning))
 
 		} else if counter == 2*config.MinutesToShutdown {
-			s.ChannelMessageSend(config.DiscordHomeChannel, fmt.Sprintf("Server has been empty for %n minutes, stopping server!", config.MinutesToShutdown))
+			s.ChannelMessageSend(config.DiscordHomeChannel, fmt.Sprintf("Server has been empty for %d minutes, stopping server!", config.MinutesToShutdown))
 			stop_server()
 		}
 	} else {
@@ -105,7 +104,7 @@ func handle_message(s *discordgo.Session, m *discordgo.MessageCreate) {
 		stop_server()
 	}
 	if strings.HasPrefix(m.Content, "!info") {
-		info()
+		info(s)
 	}
 
 }
@@ -159,24 +158,24 @@ func stop_server() {
 	}
 }
 
-func info() {
+func info(s *discordgo.Session) {
 	var mcreq = mcquery.NewRequest()
 	var mcerr = mcreq.Connect(config.MinecraftServerAddress)
 	if mcerr != nil {
-		discord.ChannelMessageSend(config.DiscordHomeChannel, "Server does not appear to be up type !start to start the server!")
+		s.ChannelMessageSend(config.DiscordHomeChannel, "Server does not appear to be up type !start to start the server!")
 	}
 	res, mcerr := mcreq.Simple()
 
 	if mcerr != nil {
-		discord.ChannelMessageSend(config.DiscordHomeChannel, "Could not get server info :(")
+		s.ChannelMessageSend(config.DiscordHomeChannel, "Could not get server info :(")
 	} else {
-		var players = "er spelen momenteel geen spelers"
+		var players = "No people playing :("
 		if res.NumPlayers == 1 {
-			players = "er speelt momenteel een speler"
+			players = "One person playing"
 		} else if res.NumPlayers > 1 {
-			players = fmt.Sprintf("er spelen momenteel %d spelers", res.NumPlayers)
+			players = fmt.Sprintf("%d player playing right now", res.NumPlayers)
 		}
 
-		discord.ChannelMessageSend(config.DiscordHomeChannel, fmt.Sprintf("\n De server draait, %s", players))
+		s.ChannelMessageSend(config.DiscordHomeChannel, fmt.Sprintf("\n Server is running, %s", players))
 	}
 }
