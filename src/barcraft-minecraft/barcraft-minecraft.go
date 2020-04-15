@@ -56,7 +56,6 @@ func main() {
 	}
 
 	discord, derr := discordgo.New("Bot " + config.DiscordToken)
-
 	if derr != nil {
 		fmt.Println("Error creating Discord session: ", derr)
 		return
@@ -71,7 +70,6 @@ func main() {
 	defer discord.Close()
 
 	ticker := time.NewTicker(30 * time.Second)
-
 	for _ = range ticker.C {
 		check_server_off(discord)
 	}
@@ -130,7 +128,6 @@ func server_operation(operation int) {
 		ec2sv := ec2.New(sess)
 
 		var operr error
-
 		switch {
 		case operation == SERVER_ON:
 			_, operr = ec2sv.StartInstances(&ec2.StartInstancesInput{
@@ -155,15 +152,14 @@ func server_operation(operation int) {
 }
 
 func info(s *discordgo.Session) {
+
 	var mcreq = mcquery.NewRequest()
 
 	if mcerr := mcreq.Connect(config.MinecraftServerAddress); mcerr != nil {
 		s.ChannelMessageSend(config.DiscordHomeChannel, "Server does not appear to be up type !start to start the server!")
 	}
 
-	res, mcerr := mcreq.Simple()
-
-	if mcerr != nil {
+	if res, mcerr := mcreq.Simple(); mcerr != nil {
 		s.ChannelMessageSend(config.DiscordHomeChannel, "Could not get server info :(")
 	} else {
 		var players = "No people playing :("
