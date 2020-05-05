@@ -35,7 +35,7 @@ var counter int = 0
 
 func initConfig() error {
 
-	if configfile, openerr := os.Open("..\\..\\config.json"); openerr != nil {
+	if configfile, openerr := os.Open("config.json"); openerr != nil {
 		return fmt.Errorf("Could not find or open config.json")
 	} else {
 		configbyte, configerr := ioutil.ReadAll(configfile)
