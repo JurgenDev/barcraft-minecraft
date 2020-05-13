@@ -4,6 +4,6 @@
     "AWSRegion":"",
     "MinecraftServerAddress":"",
     "DiscordHomeChannel":"",
-    "MinutesToWarning":"",
-    "MinutesToShutdown":""
+    "MinutesToWarning":999,
+    "MinutesToShutdown":999
 }
